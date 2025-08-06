@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
 
     @Override
     public List<UserDto> findAll() {
-        List<User> users = userStorage.findAll();
+        List<User> users = userRepository.findAll();
 
         return users.stream()
                 .map(UserMapper::toUserDto)
@@ -26,30 +26,30 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto findById(long userId) {
-        User user = userStorage.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("пользователь не найден"));
         return UserMapper.toUserDto(user);
     }
 
     @Override
     public UserDto create(UserDto userDto) {
-        Optional<User> existingUser = userStorage.findByEmail(userDto.getEmail());
+        Optional<User> existingUser = userRepository.findByEmail(userDto.getEmail());
         if (existingUser.isPresent()) {
             throw new EmailAlreadyExistsException("Пользователь с такой почтой существует");
         }
-        return UserMapper.toUserDto(userStorage.create(UserMapper.toUser(userDto)));
+        return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
     }
 
     @Override
     public UserDto update(long userId, UserDto userDto) {
-        User existingUser = userStorage.findById(userId)
+        User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("пользователь не найден"));
 
         if (userDto.getName() != null && !userDto.getName().isBlank()) {
             existingUser.setName(userDto.getName());
         }
 
-        Optional<User> userByEmail = userStorage.findByEmail(userDto.getEmail());
+        Optional<User> userByEmail = userRepository.findByEmail(userDto.getEmail());
 
         if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
             if (userByEmail.isPresent() && userByEmail.get().getId() != userId) {
@@ -58,13 +58,13 @@ public class UserServiceImpl implements UserService {
             existingUser.setEmail(userDto.getEmail());
         }
 
-        userStorage.update(userId, existingUser);
+        userRepository.save(existingUser);
 
         return UserMapper.toUserDto(existingUser);
     }
 
     @Override
     public void deleteById(long userId) {
-        userStorage.deleteById(userId);
+        userRepository.deleteById(userId);
     }
 }

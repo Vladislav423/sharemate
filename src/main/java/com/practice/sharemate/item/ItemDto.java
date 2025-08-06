@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -22,5 +24,7 @@ public class ItemDto {
 
     @NotNull
     private Boolean available;
+
+    private List<CommentDto> comments;
 
 }
